@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
         process.env.NEXT_PUBLIC_JWT_SECRET,
         { expiresIn: "1d" }
       );
-      return new Response(`LoggedIn successfully - ${token}`, {
-        status: 201,
+      return new Response(JSON.stringify({ token }), {
+        status: 200,
       });
     }
   } catch (error) {

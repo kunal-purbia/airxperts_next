@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       });
     }
   } catch (error) {
-    console.error("Error while clocking in user", error);
+    console.error("Error while clocking out user", error);
     return new Response(JSON.stringify({ success: false, error }), {
       status: 400,
       headers: {
