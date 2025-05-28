@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Loading from "@/components/Loading";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Dashboard = () => {
-  const { token, logout } = useAuth();
+  const { userId, token, logout } = useAuth();
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [summaryData, setSummaryData] = useState<any>(null);
 
   const handleClockIn = async () => {
     try {
@@ -40,7 +42,6 @@ const Dashboard = () => {
   const handleClockOut = async () => {
     try {
       setLoading(true);
-      // Example logic — implement real API call
       const result = await fetch("http://localhost:3000/api/clock-out", {
         method: "POST",
         headers: {
@@ -56,6 +57,7 @@ const Dashboard = () => {
         message === "No active clock in present"
       ) {
         setStatus("out");
+        fetchSummary();
       }
     } catch (error) {
       console.log("Error while clocking out", error);
@@ -70,27 +72,83 @@ const Dashboard = () => {
     router.push("/");
   };
 
+  const fetchSummary = async () => {
+    try {
+      setLoading(true);
+      const result = await fetch(
+        `http://localhost:3000/api/summary/weekly?userId=${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { summary } = await result.json();
+      setSummaryData(summary);
+    } catch (error) {
+      console.log("Error while fetching summary", error);
+      alert("Error occurred, check console");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchSummary();
+    }
+  }, [token]);
+
   return (
     <>
       {loading ? (
         <Loading />
       ) : (
-        <div className="container form-box">
-          <h1>Welcome to Dashboard</h1>
-          <div style={{ display: "flex", gap: "16px" }}>
+        <div className="dashboard-container">
+          <h1 className="dashboard-title">Welcome to Dashboard</h1>
+          <div className="dashboard-actions">
             {status === "in" ? (
-              <button className="button" onClick={handleClockOut}>
+              <button className="btn btn-primary" onClick={handleClockOut}>
                 Clock-OUT
               </button>
             ) : (
-              <button className="button" onClick={handleClockIn}>
+              <button className="btn btn-primary" onClick={handleClockIn}>
                 Clock-IN
               </button>
             )}
-            <button className="button" onClick={handleLogout}>
+            <button className="btn btn-secondary" onClick={handleLogout}>
               LOGOUT
             </button>
           </div>
+          {summaryData && (
+            <div className="summary-section">
+              <h3 className="summary-title">Weekly Summary</h3>
+              {Object.keys(summaryData).map((week: any) => (
+                <div key={week} className="summary-week">
+                  <strong className="summary-week-label">{week}</strong>
+                  <table className="summary-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Hours</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(summaryData[week]).map(([dte, hrs]) => (
+                        <tr key={dte}>
+                          <td>{dte}</td>
+                          <td>{hrs.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>

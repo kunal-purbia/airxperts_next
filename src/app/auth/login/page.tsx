@@ -28,13 +28,14 @@ const Login = () => {
 
         alert(result.message);
         if (result.token && result.message === "Login successful") {
+          localStorage.setItem("userId", result.userId);
           login(result.token);
           router.push("/dashboard");
         }
       }
     } catch (error) {
       console.log("Error while logging in user", error);
-      alert("Error occurred, check console")
+      alert("Error occurred, check console");
     } finally {
       setLoading(false);
     }

@@ -37,7 +37,11 @@ export async function POST(req: NextRequest) {
         { expiresIn: "1d" }
       );
       return new Response(
-        JSON.stringify({ message: "Login successful", token }),
+        JSON.stringify({
+          message: "Login successful",
+          token,
+          userId: userCheck._id,
+        }),
         {
           status: 200,
         }
