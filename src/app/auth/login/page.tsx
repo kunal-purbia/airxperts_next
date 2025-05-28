@@ -34,6 +34,7 @@ const Login = () => {
       }
     } catch (error) {
       console.log("Error while logging in user", error);
+      alert("Error occurred, check console")
     } finally {
       setLoading(false);
     }

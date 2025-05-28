@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { Timesheet } from "@/models/Timesheet";
 import jwt from "jsonwebtoken";
+import { User } from "@/models/User";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,19 +18,33 @@ export async function POST(req: NextRequest) {
         clockOut: null,
       });
       if (checkOpenEntry) {
-        return new Response(`Active Clock-In`, {
-          status: 400,
-        });
+        await User.findOneAndUpdate(
+          { _id: userId },
+          { $set: { status: true } }
+        );
+        return new Response(
+          JSON.stringify({ message: `Active Clock-In is present` }),
+          {
+            status: 400,
+          }
+        );
       } else {
+        await User.findOneAndUpdate(
+          { _id: userId },
+          { $set: { status: true } }
+        );
         const entry = new Timesheet({
           userId,
           clockIn: new Date().toISOString(),
         });
 
         await entry.save();
-        return new Response(`Clocked In successfully`, {
-          status: 200,
-        });
+        return new Response(
+          JSON.stringify({ message: `Clocked In successfully` }),
+          {
+            status: 200,
+          }
+        );
       }
     } else {
       return new Response(`Unauthorized`, {

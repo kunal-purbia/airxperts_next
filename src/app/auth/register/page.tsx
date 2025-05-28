@@ -35,6 +35,7 @@ const Register = () => {
       }
     } catch (error) {
       console.log("Error while registering user", error);
+      alert("Error occurred, check console")
     } finally {
       setLoading(false);
     }

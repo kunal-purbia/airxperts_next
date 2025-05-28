@@ -17,18 +17,32 @@ export async function POST(req: NextRequest) {
         clockout: null,
       }).sort({ clockIn: -1 });
       if (!checkOpenEntry) {
-        return new Response(`No active clock in present`, {
-          status: 400,
-        });
+        await User.findOneAndUpdate(
+          { _id: userId },
+          { $set: { status: false } }
+        );
+        return new Response(
+          JSON.stringify({ message: `No active clock in present` }),
+          {
+            status: 400,
+          }
+        );
       } else {
+        await User.findOneAndUpdate(
+          { _id: userId },
+          { $set: { status: false } }
+        );
         checkOpenEntry.clockOut = new Date().toISOString();
         await checkOpenEntry.save();
-        return new Response(`Clocked Out successfully`, {
-          status: 200,
-        });
+        return new Response(
+          JSON.stringify({ message: `Clocked Out successfully` }),
+          {
+            status: 200,
+          }
+        );
       }
     } else {
-      return new Response(`Unauthorized`, {
+      return new Response(JSON.stringify({ message: `Unauthorized` }), {
         status: 400,
       });
     }
