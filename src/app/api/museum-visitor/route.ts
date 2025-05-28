@@ -1,8 +1,9 @@
-For Question 1 - Option 4 - After 5 seconds, 24 and 24
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { NextRequest } from "next/server";
 
-For Question 2 - Use API - /api/museum-visitor
-
-Static Code for Question 2 is given below:
+export async function POST(req: NextRequest) {
+  try {
+    const { input } = await req.json(); // use req.json() to get the request body
 
     function countVisits(input: string) {
       const initialCount = { M: 0, W: 0, C: 0 };
@@ -33,6 +34,22 @@ Static Code for Question 2 is given below:
     }
 
     const result = countVisits(input);
-    console.log(result)
-
-For Question 3 -
+    return new Response(JSON.stringify({ success: true, data: result }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Error parsing request:", error);
+    return new Response(
+      JSON.stringify({ success: false, error: "Invalid JSON" }),
+      {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+}
