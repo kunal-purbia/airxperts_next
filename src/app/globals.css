@@ -15,6 +15,21 @@
   align-items: center;
 }
 
+.form-box {
+  flex-direction: column;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-field {
+  height: 30px;
+  padding-left: 5px;
+}
+
 .button {
   padding: 16px;
   cursor: pointer;

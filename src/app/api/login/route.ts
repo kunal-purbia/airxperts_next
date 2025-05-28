@@ -20,14 +20,14 @@ export async function POST(req: NextRequest) {
     // Check if user exists
     const userCheck = await User.findOne({ email });
     if (!userCheck)
-      return new Response("User not found", {
+      return new Response(JSON.stringify({ message: "User not found" }), {
         status: 404,
       });
 
     const isAuthentic = await bcrypt.compare(password, userCheck.password);
 
     if (!isAuthentic) {
-      return new Response("Incorrect Password", {
+      return new Response(JSON.stringify({ message: "Incorrect Password" }), {
         status: 401,
       });
     } else {
@@ -36,9 +36,12 @@ export async function POST(req: NextRequest) {
         process.env.NEXT_PUBLIC_JWT_SECRET,
         { expiresIn: "1d" }
       );
-      return new Response(JSON.stringify({ token }), {
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({ message: "Login successful", token }),
+        {
+          status: 200,
+        }
+      );
     }
   } catch (error) {
     console.error("Error while registering user:", error);

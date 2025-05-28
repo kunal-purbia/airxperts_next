@@ -11,15 +11,18 @@ export async function POST(req: NextRequest) {
 
     // input validation
     if (!name || !email || !password) {
-      return new Response("Missing required information", {
-        status: 400,
-      });
+      return new Response(
+        JSON.stringify({ message: "Missing required information" }),
+        {
+          status: 400,
+        }
+      );
     }
 
     // Check if user exists
     const userCheck = await User.findOne({ email });
     if (userCheck)
-      return new Response("User already exists", {
+      return new Response(JSON.stringify({ message: "User already exists" }), {
         status: 400,
       });
 
@@ -27,9 +30,12 @@ export async function POST(req: NextRequest) {
 
     const newUser = await User.create({ name, email, password: hashPassword });
 
-    return new Response(`User created successfully -  ${newUser}`, {
-      status: 201,
-    });
+    return new Response(
+      JSON.stringify({ message: `User created successfully` }),
+      {
+        status: 201,
+      }
+    );
   } catch (error) {
     console.error("Error while registering user:", error);
     return new Response(JSON.stringify({ success: false, error }), {
