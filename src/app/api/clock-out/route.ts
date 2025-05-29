@@ -10,8 +10,9 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const authHeader = req.headers.get("Authorization");
-    const token = authHeader?.split(" ")[1];
-    const { userId } = jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET);
+    const token = authHeader?.split(" ")[1] as string;
+    const secret = process.env.NEXT_PUBLIC_JWT_SECRET as string;
+    const { userId } = jwt.verify(token, secret) as { userId: string };
     if (userId) {
       const checkOpenEntry = await Timesheet.findOne({
         userId,

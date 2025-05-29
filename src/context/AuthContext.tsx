@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { UseAuthInterface } from "@/types/UserAuth.type";
 import React, { useState, useContext, createContext, useEffect } from "react";
 
-const AuthContext: unknown = createContext(null);
+const AuthContext = createContext<UseAuthInterface | null>(null);
 
 export const AuthProvider = ({ children }: any) => {
   const [token, setToken] = useState<string | null>(null);

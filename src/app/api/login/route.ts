@@ -31,11 +31,14 @@ export async function POST(req: NextRequest) {
         status: 401,
       });
     } else {
-      const token = jwt.sign(
-        { userId: userCheck._id },
-        process.env.NEXT_PUBLIC_JWT_SECRET,
-        { expiresIn: "1d" }
-      );
+      const secret = process.env.NEXT_PUBLIC_JWT_SECRET;
+      if (!secret) {
+        throw new Error("NEXT_PUBLIC_JWT_SECRET is not set");
+      }
+
+      const token = jwt.sign({ userId: userCheck._id }, secret, {
+        expiresIn: "1d",
+      });
       return new Response(
         JSON.stringify({
           message: "Login successful",

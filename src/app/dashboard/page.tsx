@@ -2,11 +2,12 @@
 "use client";
 import Loading from "@/components/Loading";
 import { useAuth } from "@/context/AuthContext";
+import { UseAuthInterface } from "@/types/UserAuth.type";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const Dashboard = () => {
-  const { userId, token, logout } = useAuth();
+  const { userId, token, logout } = useAuth() as UseAuthInterface;
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -137,7 +138,7 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(summaryData[week]).map(([dte, hrs]) => (
+                      {Object.entries(summaryData[week]).map(([dte, hrs]: any) => (
                         <tr key={dte}>
                           <td>{dte}</td>
                           <td>{hrs.toFixed(2)}</td>

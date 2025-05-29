@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
@@ -6,7 +7,7 @@ import React, { useState } from "react";
 
 const Login = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login } = useAuth() as any;
   const [loading, setLoading] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
