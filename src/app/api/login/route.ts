@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Error while registering user:", error);
+    console.error("Error while login user:", error);
     return new Response(JSON.stringify({ success: false, error }), {
       status: 400,
       headers: {

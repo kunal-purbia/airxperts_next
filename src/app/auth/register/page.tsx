@@ -20,7 +20,7 @@ const Register = () => {
       if (password !== confirmPassword) {
         alert("Passwords do not match");
       } else {
-        const res = await fetch("http://localhost:3000/api/register", {
+        const res = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email, password }),

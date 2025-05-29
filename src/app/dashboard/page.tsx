@@ -13,10 +13,20 @@ const Dashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [summaryData, setSummaryData] = useState<any>(null);
 
+  const [userToken, setUserToken] = useState<string | null>(null);
+  const [user, setUser] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("userId");
+    setUserToken(storedToken || token);
+    setUser(storedUser || userId);
+  }, [token, userId]);
+
   const handleClockIn = async () => {
     try {
       setLoading(true);
-      const result = await fetch("http://localhost:3000/api/clock-in", {
+      const result = await fetch("/api/clock-in", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -43,7 +53,7 @@ const Dashboard = () => {
   const handleClockOut = async () => {
     try {
       setLoading(true);
-      const result = await fetch("http://localhost:3000/api/clock-out", {
+      const result = await fetch("/api/clock-out", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -76,16 +86,13 @@ const Dashboard = () => {
   const fetchSummary = async () => {
     try {
       setLoading(true);
-      const result = await fetch(
-        `http://localhost:3000/api/summary/weekly?userId=${userId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const result = await fetch(`/api/summary/weekly?userId=${user}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       const { summary } = await result.json();
       setSummaryData(summary);
@@ -98,10 +105,10 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (token) {
+    if (userToken && user) {
       fetchSummary();
     }
-  }, [token]);
+  }, [userToken, user]);
 
   return (
     <>
@@ -138,12 +145,14 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(summaryData[week]).map(([dte, hrs]: any) => (
-                        <tr key={dte}>
-                          <td>{dte}</td>
-                          <td>{hrs.toFixed(2)}</td>
-                        </tr>
-                      ))}
+                      {Object.entries(summaryData[week]).map(
+                        ([dte, hrs]: any) => (
+                          <tr key={dte}>
+                            <td>{dte}</td>
+                            <td>{hrs.toFixed(2)}</td>
+                          </tr>
+                        )
+                      )}
                     </tbody>
                   </table>
                 </div>
