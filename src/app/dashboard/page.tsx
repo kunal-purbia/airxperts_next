@@ -1,78 +1,113 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import Loading from "@/components/Loading";
+
+import React, { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { UseAuthInterface } from "@/types/UserAuth.type";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import Loading from "@/components/Loading";
+
+interface WeeklySummary {
+  [week: string]: {
+    [date: string]: number;
+  };
+}
 
 const Dashboard = () => {
   const { userId, token, logout } = useAuth() as UseAuthInterface;
   const router = useRouter();
-  const [status, setStatus] = useState<string | null>(null);
+
+  const [status, setStatus] = useState<"in" | "out" | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [summaryData, setSummaryData] = useState<any>(null);
+  const [summaryData, setSummaryData] = useState<WeeklySummary | null>(null);
 
-  const [userToken, setUserToken] = useState<string | null>(null);
-  const [user, setUser] = useState<string | null>(null);
+  // Memoized derived values from either context or localStorage
+  const authToken = useMemo(() => {
+    return token || localStorage.getItem("token");
+  }, [token]);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("userId");
-    setUserToken(storedToken || token);
-    setUser(storedUser || userId);
-  }, [token, userId]);
+  const authUserId = useMemo(() => {
+    return userId || localStorage.getItem("userId");
+  }, [userId]);
 
   const handleClockIn = async () => {
+    if (!authToken) return alert("Token not found");
+
     try {
       setLoading(true);
-      const result = await fetch("/api/clock-in", {
+      const res = await fetch("/api/clock-in", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
-      const { message } = await result.json();
+      const { message } = await res.json();
       alert(message);
 
       if (
-        message === "Clocked In successfully" ||
-        message === "Active Clock-In is present"
+        ["Clocked In successfully", "Active Clock-In is present"].includes(
+          message
+        )
       ) {
         setStatus("in");
       }
     } catch (error) {
-      console.log("Error while clocking in", error);
-      alert("Error occurred, check console");
+      console.error("Clock-In Error:", error);
+      alert("Clock-In failed, check console");
     } finally {
       setLoading(false);
     }
   };
 
   const handleClockOut = async () => {
+    if (!authToken) return alert("Token not found");
+
     try {
       setLoading(true);
-      const result = await fetch("/api/clock-out", {
+      const res = await fetch("/api/clock-out", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
-      const { message } = await result.json();
+      const { message } = await res.json();
       alert(message);
 
       if (
-        message === "Clocked Out successfully" ||
-        message === "No active clock in present"
+        ["Clocked Out successfully", "No active clock in present"].includes(
+          message
+        )
       ) {
         setStatus("out");
         fetchSummary();
       }
     } catch (error) {
-      console.log("Error while clocking out", error);
-      alert("Error occurred, check console");
+      console.error("Clock-Out Error:", error);
+      alert("Clock-Out failed, check console");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSummary = async () => {
+    if (!authToken || !authUserId) return;
+
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/summary/weekly?userId=${authUserId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const { summary } = await res.json();
+      setSummaryData(summary);
+    } catch (error) {
+      console.error("Fetch Summary Error:", error);
+      alert("Failed to fetch summary");
     } finally {
       setLoading(false);
     }
@@ -83,40 +118,20 @@ const Dashboard = () => {
     router.push("/");
   };
 
-  const fetchSummary = async () => {
-    try {
-      setLoading(true);
-      const result = await fetch(`/api/summary/weekly?userId=${user}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const { summary } = await result.json();
-      setSummaryData(summary);
-    } catch (error) {
-      console.log("Error while fetching summary", error);
-      alert("Error occurred, check console");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (userToken && user) {
+    if (authToken && authUserId) {
       fetchSummary();
     }
-  }, [userToken, user]);
+  }, [authToken, authUserId]);
 
   return (
-    <>
+    <div className="dashboard-container">
       {loading ? (
         <Loading />
       ) : (
-        <div className="dashboard-container">
+        <>
           <h1 className="dashboard-title">Welcome to Dashboard</h1>
+
           <div className="dashboard-actions">
             {status === "in" ? (
               <button className="btn btn-primary" onClick={handleClockOut}>
@@ -127,14 +142,16 @@ const Dashboard = () => {
                 Clock-IN
               </button>
             )}
+
             <button className="btn btn-secondary" onClick={handleLogout}>
               LOGOUT
             </button>
           </div>
+
           {summaryData && (
             <div className="summary-section">
               <h3 className="summary-title">Weekly Summary</h3>
-              {Object.keys(summaryData).map((week: any) => (
+              {Object.entries(summaryData).map(([week, entries]) => (
                 <div key={week} className="summary-week">
                   <strong className="summary-week-label">{week}</strong>
                   <table className="summary-table">
@@ -145,23 +162,21 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(summaryData[week]).map(
-                        ([dte, hrs]: any) => (
-                          <tr key={dte}>
-                            <td>{dte}</td>
-                            <td>{hrs.toFixed(2)}</td>
-                          </tr>
-                        )
-                      )}
+                      {Object.entries(entries).map(([date, hours]) => (
+                        <tr key={date}>
+                          <td>{date}</td>
+                          <td>{hours.toFixed(2)}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </>
       )}
-    </>
+    </div>
   );
 };
 
