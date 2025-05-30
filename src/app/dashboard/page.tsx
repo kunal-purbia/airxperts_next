@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { UseAuthInterface } from "@/types/UserAuth.type";
@@ -20,15 +19,18 @@ const Dashboard = () => {
   const [status, setStatus] = useState<"in" | "out" | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [summaryData, setSummaryData] = useState<WeeklySummary | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
 
-  // Memoized derived values from either context or localStorage
-  const authToken = useMemo(() => {
-    return token || localStorage.getItem("token");
-  }, [token]);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedToken = token || localStorage.getItem("token");
+      const storedUserId = userId || localStorage.getItem("userId");
 
-  const authUserId = useMemo(() => {
-    return userId || localStorage.getItem("userId");
-  }, [userId]);
+      setAuthToken(storedToken);
+      setAuthUserId(storedUserId);
+    }
+  }, [token, userId]);
 
   const handleClockIn = async () => {
     if (!authToken) return alert("Token not found");
@@ -51,6 +53,8 @@ const Dashboard = () => {
         )
       ) {
         setStatus("in");
+      } else if(["Invalid or expired token", "Token missing"].includes(message)){
+        router.push("/auth/login");
       }
     } catch (error) {
       console.error("Clock-In Error:", error);

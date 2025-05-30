@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
-    const secret = process.env.JWT_SECRET as string;
+    const secret = process.env.NEXT_PUBLIC_JWT_SECRET as string;
 
     if (!token) {
       return new Response(JSON.stringify({ message: "Token missing" }), {

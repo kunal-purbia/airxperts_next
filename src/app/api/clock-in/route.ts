@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
 
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
-    const secret = process.env.JWT_SECRET as string;
+    const secret = process.env.NEXT_PUBLIC_JWT_SECRET as string;
 
     if (!token) {
       return new Response(JSON.stringify({ message: "Token missing" }), {
@@ -22,7 +22,9 @@ export async function POST(req: NextRequest) {
 
     let userId: string;
     try {
+      console.log({token, secret});
       const decoded = jwt.verify(token, secret) as { userId: string };
+      console.log(decoded);
       userId = decoded.userId;
     } catch (err) {
       return new Response(
