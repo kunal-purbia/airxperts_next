@@ -8,7 +8,10 @@ import Loading from "@/components/Loading";
 
 interface WeeklySummary {
   [week: string]: {
-    [date: string]: number;
+    [date: string]: {
+      totalHoursDecimal: number;
+      totalHoursFormatted: string;
+    };
   };
 }
 
@@ -177,7 +180,7 @@ const Dashboard = () => {
                       {Object.entries(entries).map(([date, hours]) => (
                         <tr key={date}>
                           <td>{date}</td>
-                          <td>{hours.toFixed(2)}</td>
+                          <td>{hours.totalHoursFormatted}</td>
                         </tr>
                       ))}
                     </tbody>

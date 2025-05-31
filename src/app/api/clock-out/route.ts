@@ -49,9 +49,53 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    openEntry.clockOut = new Date().toISOString();
-    await openEntry.save();
+    const clockInTime = new Date(openEntry.clockIn);
+    const clockOutTime = new Date(); // Current time of clock-out
 
+    const clockInDay = clockInTime.toISOString().split("T")[0];
+    const clockOutDay = clockOutTime.toISOString().split("T")[0];
+
+    if (clockInDay !== clockOutDay) {
+      const endOfDayUTC = new Date(
+        Date.UTC(
+          clockInTime.getUTCFullYear(),
+          clockInTime.getUTCMonth(),
+          clockInTime.getUTCDate(),
+          23,
+          59,
+          59,
+          999
+        )
+      );
+      openEntry.clockOut = endOfDayUTC.toISOString();
+      await openEntry.save();
+
+      const startOfNextDayUTC = new Date(
+        Date.UTC(
+          clockOutTime.getUTCFullYear(),
+          clockOutTime.getUTCMonth(),
+          clockOutTime.getUTCDate(),
+          0,
+          0,
+          0,
+          0
+        )
+      );
+
+      const newEntry = new Timesheet({
+        userId,
+        clockIn: startOfNextDayUTC,
+        clockOut: clockOutTime,
+      });
+
+      await newEntry.save();
+    } else {
+      // Same day, just update clockOut directly
+      openEntry.clockOut = clockOutTime.toISOString();
+      await openEntry.save();
+    }
+
+    // Update user status
     await User.findOneAndUpdate({ _id: userId }, { $set: { status: false } });
 
     return new Response(
