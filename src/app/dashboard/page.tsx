@@ -53,7 +53,10 @@ const Dashboard = () => {
         )
       ) {
         setStatus("in");
-      } else if(["Invalid or expired token", "Token missing"].includes(message)){
+      } else if (
+        ["Invalid or expired token", "Token missing"].includes(message)
+      ) {
+        localStorage.clear();
         router.push("/auth/login");
       }
     } catch (error) {
@@ -86,6 +89,11 @@ const Dashboard = () => {
       ) {
         setStatus("out");
         fetchSummary();
+      } else if (
+        ["Invalid or expired token", "Token missing"].includes(message)
+      ) {
+        localStorage.clear();
+        router.push("/auth/login");
       }
     } catch (error) {
       console.error("Clock-Out Error:", error);
