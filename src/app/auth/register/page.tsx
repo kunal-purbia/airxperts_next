@@ -1,7 +1,7 @@
 "use client";
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Register = () => {
   const router = useRouter();
@@ -35,11 +35,15 @@ const Register = () => {
       }
     } catch (error) {
       console.log("Error while registering user", error);
-      alert("Error occurred, check console")
+      alert("Error occurred, check console");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
 
   return (
     <>

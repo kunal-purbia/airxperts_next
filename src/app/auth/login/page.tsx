@@ -3,7 +3,7 @@
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Login = () => {
   const router = useRouter();
@@ -41,6 +41,10 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
 
   return (
     <>
